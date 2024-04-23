@@ -35,6 +35,7 @@ import { NetworkUtil } from '@web3modal/common'
 // -- Types ---------------------------------------------------------------------
 export interface Web3ModalClientOptions extends Omit<LibraryOptions, 'defaultChain' | 'tokens'> {
   ethersConfig: ProviderType
+  ethereumProviderOptions: EthereumProviderOptions | undefined
   siweConfig?: Web3ModalSIWEClient
   chains: Chain[]
   defaultChain?: Chain
@@ -418,8 +419,6 @@ export class Web3Modal extends Web3ModalScaffold {
 
   private async initWalletConnectProvider() {
     const walletConnectProviderOptions: EthereumProviderOptions = {
-      projectId: this.projectId,
-      showQrModal: false,
       rpcMap: this.chains
         ? this.chains.reduce<Record<number, string>>((map, chain) => {
             map[chain.chainId] = chain.rpcUrl
@@ -433,7 +432,10 @@ export class Web3Modal extends Web3ModalScaffold {
         description: this.metadata ? this.metadata.description : '',
         url: this.metadata ? this.metadata.url : '',
         icons: this.metadata ? this.metadata.icons : ['']
-      }
+      },
+      ...(this.options?.ethereumProviderOptions ?? {}),
+      projectId: this.projectId,
+      showQrModal: false
     }
 
     this.walletConnectProvider = await EthereumProvider.init(walletConnectProviderOptions)
